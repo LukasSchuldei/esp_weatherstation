@@ -1,0 +1,45 @@
+1. RAW ADC TO VOLTAGE CONVERSION:\
+   voltage = (raw_value / 4095) * 3.3\
+   - Converts 12-bit ADC reading (0-4095) to actual voltage (0-3.3V)\
+   - 4095 = max ADC value (2^12 - 1)\
+   - 3.3 = ESP32 ADC reference voltage\
+\
+2. MOISTURE PERCENTAGE CALCULATION:\
+   percentage = ((air_val - raw_value) / (air_val - water_val)) * 100\
+   - Inverted scale: lower raw values = higher moisture\
+   - air_val = calibrated dry reading (high value)\
+   - water_val = calibrated wet reading (low value)\
+   - Result: 0% (dry) to 100% (wet)\
+\
+3. LEVEL THRESHOLD CALCULATION:\
+   intervals = (air_val - water_val) // 3\
+   dry_threshold = air_val - intervals\
+   wet_threshold = water_val + intervals\
+   - Divides sensor range into 3 equal parts\
+   - Uses integer division (//) to avoid floating point\
+\
+4. LEVEL CLASSIFICATION (DFRobot Logic):\
+   if raw > dry_threshold:     \uc0\u8594  "Dry"\
+   elif raw > wet_threshold:   \uc0\u8594  "Wet" \
+   else:                       \uc0\u8594  "Very Wet"\
+   - Exclusive lower bounds (>) following DFRobot specification\
+   - Higher raw values = drier conditions\
+\
+5. VALUE CONSTRAINING:\
+   if raw > air_val: raw = air_val\
+   elif raw < water_val: raw = water_val\
+   - Keeps readings within calibrated range\
+   - Prevents percentage values outside 0-100%\
+\
+EXAMPLE WITH TYPICAL VALUES:\
+===========================\
+air_val = 3550 (dry) = 2.862V\
+water_val = 321 (wet) = 0.259V\
+intervals = (3550-321)//3 = 1076\
+dry_threshold = 3550-1076 = 2474\
+wet_threshold = 321+1076 = 1397\
+\
+Ranges:\
+- Very Wet: 0-1397 (0.000V-1.127V)\
+- Wet: 1398-2474 (1.128V-1.996V)  \
+- Dry: 2475-4095 (1.997V-3.300V)}
