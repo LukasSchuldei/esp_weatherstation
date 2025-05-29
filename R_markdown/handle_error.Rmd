@@ -981,16 +981,7 @@ class SoilSensor:
         }
     
     def read_list(self):
-        """
-        Return readings as ordered list instead of dictionary
-        
-        Returns:
-            list: [level, raw, percentage, voltage]
-            - level (str): Moisture level category
-            - raw (int): Raw ADC reading (0-4095)
-            - percentage (float): Moisture percentage (0.0-100.0)
-            - voltage (float): Sensor voltage (0.000-3.300V)
-        """
+
         data = self.read()  # Get dictionary first
         return [
             data['level'],
